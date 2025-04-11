@@ -1,0 +1,16 @@
+# Enable all checks by default and manually disable redundant or problematic checks.
+Checks:
+    '*,
+    -abseil-*,
+    -altera-*,
+    -android-*,
+    -boost-*,
+    -darwin-*,
+    -linuxkernel-*,
+    -llvmlibc-*,
+    -mpi-*,
+    -objc-*,
+    -openmp-*'
+
+FormatStyle: file
+WarningsAsErrors: '*'
