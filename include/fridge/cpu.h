@@ -3,6 +3,23 @@
 #include <array>
 #include <cstdint>
 
+enum class R8 : uint8_t {
+    a,
+    b,
+    c,
+    d,
+    e,
+    h,
+    l
+};
+
+enum class R16 : uint8_t {
+    af,
+    bc,
+    de,
+    hl,
+};
+
 struct FlagsRegister {
     bool z : 1;
     bool n : 1;
@@ -13,35 +30,34 @@ struct FlagsRegister {
 struct Registers {
     union {
         struct {
-            uint8_t afLo;
-            uint8_t afHi;
+            uint8_t f;
+            uint8_t a;
         };
         uint16_t af;
     };
     union {
         struct {
-            uint8_t bcLo;
-            uint8_t bcHi;
+            uint8_t c;
+            uint8_t b;
         };
         uint16_t bc;
     };
     union {
         struct {
-            uint8_t deLo;
-            uint8_t deHi;
+            uint8_t e;
+            uint8_t d;
         };
         uint16_t de;
     };
     union {
         struct {
-            uint8_t hlLo;
-            uint8_t hlHi;
+            uint8_t l;
+            uint8_t h;
         };
         uint16_t hl;
     };
     uint16_t sp;
     uint16_t pc;
-    FlagsRegister flags;
 };
 
 class MemoryBus {
@@ -65,5 +81,17 @@ class CPU {
 public:
 private:
     Registers reg {};
+    FlagsRegister flags {};
     MemoryBus mem;
+
+    [[nodiscard]] uint8_t cInt() const noexcept
+    {
+        return flags.c ? 1 : 0;
+    }
+
+    [[nodiscard]] uint8_t getR8(R8 r8) const noexcept;
+    void setR8(R8 r8, uint8_t val) noexcept;
+
+    [[nodiscard]] uint16_t getR16(R16 r16) const noexcept;
+    void setR16(R16 r16, uint16_t val) noexcept;
 };
