@@ -10,7 +10,11 @@ Checks:
     -llvmlibc-*,
     -mpi-*,
     -objc-*,
-    -openmp-*'
+    -openmp-*,
+
+    -cppcoreguidelines-pro-type-union-access,
+    -modernize-use-trailing-return-type,
+    -readability-identifier-length'
 
 FormatStyle: file
 WarningsAsErrors: '*'
