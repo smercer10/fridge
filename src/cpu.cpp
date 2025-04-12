@@ -1,86 +1,35 @@
 #include "fridge/cpu.h"
 
-[[nodiscard]] uint8_t CPU::getR8(R8 r8) const noexcept
+CPU::CPU() noexcept
 {
-    using enum R8;
-    switch (r8) {
-    case a:
-        return reg.a;
-    case b:
-        return reg.b;
-    case c:
-        return reg.c;
-    case d:
-        return reg.d;
-    case e:
-        return reg.e;
-    case h:
-        return reg.h;
-    case l:
-        return reg.l;
-    }
-    return 0;
+    initOpTable();
 }
 
-void CPU::setR8(R8 r8, uint8_t val) noexcept
+void CPU::initOpTable() noexcept
 {
-    using enum R8;
-    switch (r8) {
-    case a:
-        reg.a = val;
-        return;
-    case b:
-        reg.b = val;
-        return;
-    case c:
-        reg.c = val;
-        return;
-    case d:
-        reg.d = val;
-        return;
-    case e:
-        reg.e = val;
-        return;
-    case h:
-        reg.h = val;
-        return;
-    case l:
-        reg.l = val;
-        return;
-    }
+    opTable[0x88] = [](CPU& cpu) { cpu.adc(cpu.reg.b); };
+    opTable[0x89] = [](CPU& cpu) { cpu.adc(cpu.reg.c); };
+    opTable[0x8A] = [](CPU& cpu) { cpu.adc(cpu.reg.d); };
+    opTable[0x8B] = [](CPU& cpu) { cpu.adc(cpu.reg.e); };
+    opTable[0x8C] = [](CPU& cpu) { cpu.adc(cpu.reg.h); };
+    opTable[0x8D] = [](CPU& cpu) { cpu.adc(cpu.reg.l); };
+    opTable[0x8E] = [](CPU& cpu) { cpu.adc(cpu.mem.read(cpu.reg.hl)); };
+    opTable[0x8F] = [](CPU& cpu) { cpu.adc(cpu.reg.a); };
+    opTable[0xCE] = [](CPU& cpu) { cpu.adc(cpu.mem.read(cpu.reg.pc++)); };
 }
 
-[[nodiscard]] uint16_t CPU::getR16(R16 r16) const noexcept
+void CPU::adc(uint8_t val) noexcept
 {
-    using enum R16;
-    switch (r16) {
-    case af:
-        return reg.af;
-    case bc:
-        return reg.bc;
-    case de:
-        return reg.de;
-    case hl:
-        return reg.hl;
-    }
-    return 0;
-}
+    const auto a { reg.a };
+    const auto c { cBit() };
 
-void CPU::setR16(R16 r16, uint16_t val) noexcept
-{
-    using enum R16;
-    switch (r16) {
-    case af:
-        reg.af = val;
-        return;
-    case bc:
-        reg.bc = val;
-        return;
-    case de:
-        reg.de = val;
-        return;
-    case hl:
-        reg.hl = val;
-        return;
-    }
+    const uint16_t res16 = static_cast<uint16_t>(a) + val + c;
+    const auto res8 { static_cast<uint8_t>(res16) };
+
+    flags.z = res8 == 0;
+    flags.n = false;
+    flags.h = ((a & 0x0F) + (val & 0x0F) + c) > 0xFF; // NOLINT(hicpp-signed-bitwise)
+    flags.c = res16 > 0xFF;
+
+    reg.a = res8;
 }
